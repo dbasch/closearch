@@ -12,7 +12,7 @@ Be warned: there is not much you can do with this besides telling me all I could
 
 + "lein run" will index those files and start a jetty server on localhost:8080.
 
-+ Point your browser to http://localhost:8080?the+words+to+search to see list of the files that match those words.
++ Point your browser to http://localhost:8080?the+words+to+search to see a list of the files that match those words.
 
 Perhaps I'll turn this into something more useful, who knows :)
 
