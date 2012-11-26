@@ -8,13 +8,13 @@
 
 ; Create token -> file mappings for all tokens in a text file
 ; Sorry, no tf-idf for now. Who needs relevance anyway?
-(defn mappings[file]
-  (map #(hash-map % #{file}) (-> file slurp tokenize distinct)))
+(defn mappings[dirname filename]
+  (map #(hash-map % #{filename}) (-> (str dirname "/" filename) slurp tokenize)))
 
 ; Stick all the mappings for all the tokens in all the files into a single in-memory map
 ; If you kill the server, you'll have to reindex everything.
-(defn build-index[dir]
-  (apply merge-with union (mapcat (comp mappings #(.getPath %)) (.listFiles (java.io.File. dir)))))
+(defn build-index[dirname]
+  (apply merge-with union (mapcat (comp (partial mappings dirname) #(.getName %)) (.listFiles (java.io.File. dirname)))))
 
 (def idx (build-index "text/"))
 
