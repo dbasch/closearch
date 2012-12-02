@@ -19,6 +19,7 @@
          idx (transient {})]
     (if-not (seq files) (persistent! idx)
             (recur (rest files) (add idx (first files))))))
+
 ;; An "AND" query. The only type we support.
 (defn search[q]
   (reduce intersection (map (comp index lower-case) (split q #"\+"))))
