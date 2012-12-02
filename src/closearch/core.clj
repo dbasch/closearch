@@ -6,7 +6,7 @@
 (def index)
 
 ;; Read a file, invert it, and add it to the index.
-(defn add[idx file]
+(defn add![idx file]
   (let [f (.getName file)]
     (loop [idx idx
            tokens (.split p (lower-case (slurp file)))]
@@ -18,7 +18,7 @@
   (loop [files (.listFiles (java.io.File. dirname))
          idx (transient {})]
     (if-not (seq files) (persistent! idx)
-            (recur (rest files) (add idx (first files))))))
+            (recur (rest files) (add! idx (first files))))))
 
 ;; An "AND" query. The only type we support.
 (defn search[q]
@@ -37,4 +37,6 @@
 (defn -main[& args]
   (println (str "Building index: " (now)))
   (def index (build-index (first args)))
-  (println (str "Starting search server: " (now))))
+  (println (str "Starting search server: " (now)))
+  (run-jetty #'app {:port 8080 :join? false}))
+
