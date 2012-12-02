@@ -19,7 +19,6 @@
          idx (transient {})]
     (if-not (seq files) (persistent! idx)
             (recur (rest files) (add idx (first files))))))
-
 ;; An "AND" query. The only type we support.
 (defn search[q]
   (reduce intersection (map (comp index lower-case) (split q #"\+"))))
@@ -37,5 +36,4 @@
 (defn -main[& args]
   (println (str "Building index: " (now)))
   (def index (build-index (first args)))
-  (println (str "Starting search server: " (now)))
-  (run-jetty #'app {:port 8080 :join? false}))
+  (println (str "Starting search server: " (now))))
