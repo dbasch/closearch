@@ -1,39 +1,41 @@
-;; CloSearch - a very basic text search engine
-
 (ns closearch.core
-  (:use ring.adapter.jetty [clojure.set :only (union intersection)] [clojure.string :only (split lower-case)]))
+  (:gen-class :main true)
+  (:use ring.adapter.jetty [clojure.set :only (union intersection)] [clojure.string :only (split lower-case)] [clj-time.core :only (now)]))
 
-(defn tokenize[text]
-  (split (lower-case text) #"[\s#&!:,;\.\\\+-]+"))
+(def p (re-pattern #"[^\p{L}&&[^\p{M}]]"))
+(def index)
 
-; Create token -> file mappings for all tokens in a text file
-; Sorry, no tf-idf for now. Who needs relevance anyway?
-(defn mappings[file]
-  (map #(hash-map % #{file}) (-> file slurp tokenize distinct)))
+;; Read a file, invert it, and add it to the index.
+(defn add[idx file]
+  (let [f (.getName file)]
+    (loop [idx idx
+           tokens (.split p (lower-case (slurp file)))]
+      (if-not (seq tokens) idx
+              (recur (assoc! idx (first tokens) (union (idx (first tokens)) #{f})) (rest tokens))))))
 
-; Stick all the mappings for all the tokens in all the files into a single in-memory map
-; If you kill the server, you'll have to reindex everything.
-(defn build-index[dir]
-  (apply merge-with union (mapcat (comp mappings #(.getPath %)) (.listFiles (java.io.File. dir)))))
+;; Index all files.
+(defn build-index[dirname]
+  (loop [files (.listFiles (java.io.File. dirname))
+         idx (transient {})]
+    (if-not (seq files) (persistent! idx)
+            (recur (rest files) (add idx (first files))))))
 
-(def idx (build-index "text/"))
-
-; An "AND" query. The only type we support.
+;; An "AND" query. The only type we support.
 (defn search[q]
-  (reduce intersection (map (comp idx lower-case) (split q #"\+"))))
+  (reduce intersection (map (comp index lower-case) (split q #"\+"))))
 
-; A quick and dirty way to render an html response for a query. Don't judge me :)
+;; A quick and dirty way to render an html response for a query. Don't judge me :)
 (defn response[q]
- (str "<html>" (apply str (interpose "<br/>" (search q))) "</html>"))
+  (str "<html>" (apply str (interpose "<br/>" (search q))) "</html>"))
 
 (defn app [req]
   {:status  200
    :headers {"Content-Type" "text/html"}
-   :body
-   (if (req :query-string) (response (req :query-string)))})
+   :body (if (req :query-string) (response (req :query-string)))})
 
-; Run the search server. You can do this from the REPL if you so please.
-(defn boot []
+;; Run the search server.
+(defn -main[& args]
+  (println (str "Building index: " (now)))
+  (def index (build-index (first args)))
+  (println (str "Starting search server: " (now)))
   (run-jetty #'app {:port 8080 :join? false}))
-
-(defn -main[& args] (boot))
