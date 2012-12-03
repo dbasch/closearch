@@ -10,7 +10,7 @@ Be warned: there is not much you can do with this besides telling me all I could
 
 + Create a directory named "text" whenever you'll be running the server. Throw a bunch of text files in it.
 
-+ "lein run" will index those files and start a jetty server on localhost:8080.
++ "lein run text" will index those files and start a jetty server on localhost:8080.
 
 + Point your browser to http://localhost:8080?the+words+to+search to see a list of the files that match those words.
 
