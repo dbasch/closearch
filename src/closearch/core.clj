@@ -6,21 +6,16 @@
 (def index)
 
 ;; Read a file, invert it, and add it to the index.
-(defn add![idx file]
-  (let [f (.getName file)]
-    (loop [idx idx
-           tokens (.split p (lower-case (slurp file)))]
-      (if-not (seq tokens) idx
-              (recur (assoc! idx (first tokens) (union (idx (first tokens)) #{f})) (rest tokens))))))
+(defn invert[file]
+  (let [f (.getName file)
+        tokens (.split p (lower-case (slurp file)))]
+        (into {} (mapcat #(hash-map % #{f}) tokens))))
 
 ;; Index all files.
 (defn build-index[dirname]
-  (loop [files (.listFiles (java.io.File. dirname))
-         idx (transient {})]
-    (if-not (seq files) (persistent! idx)
-            (recur (rest files) (add! idx (first files))))))
+  (reduce #(merge-with union %1 %2) (map invert (.listFiles (java.io.File. dirname)))))
 
-;; An "AND" query. The only type we support.
+;; An "AND" query. (.split p (lower-case (slurp file)))The only type we support.
 (defn search[q]
   (reduce intersection (map (comp index lower-case) (split q #"\+"))))
 
@@ -39,4 +34,3 @@
   (def index (build-index (first args)))
   (println (str "Starting search server: " (now)))
   (run-jetty #'app {:port 8080 :join? false}))
-
