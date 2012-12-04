@@ -1,4 +1,4 @@
-(defproject closearch "1.0.0-SNAPSHOT"
+(defproject closearch "0.0.1-SNAPSHOT"
   :main closearch.core
   :jvm-opts ["-Xmx4g" "-server"]
   :description "A very basic proof-of-concept search engine"
