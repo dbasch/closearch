@@ -15,7 +15,7 @@
 (defn build-index[dirname]
   (reduce #(merge-with union %1 %2) (map invert (.listFiles (java.io.File. dirname)))))
 
-;; An "AND" query. (.split p (lower-case (slurp file)))The only type we support.
+;; An "AND" query. The only type we support.
 (defn search[q]
   (reduce intersection (map (comp index lower-case) (split q #"\+"))))
 
