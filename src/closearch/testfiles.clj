@@ -9,5 +9,7 @@
 ;; e.g. 10000
 (defn -main[& args]
  (.mkdir (new File (second args)))
+ (let [nwords (count dict)]
  (dotimes [n (#(Integer/parseInt %) (first args))]
-  (spit (str (second args) "/file." n) (apply str (interpose " " (take 1000 (shuffle dict)))))))
+   (let [positions (take 1000 (repeatedly #(rand-int nwords)))]
+  (spit (str (second args) "/file." n) (apply str (interpose " " (map (partial nth dict) positions))))))))
